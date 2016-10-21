@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Apache.Ignite.Core;
+using Apache.Ignite.Core.Cache;
 using Apache.Ignite.Core.Cache.Configuration;
 
 namespace IgniteEFCacheStore
@@ -19,7 +21,8 @@ namespace IgniteEFCacheStore
                     Name = "blogs",
                     CacheStoreFactory = new BlogCacheStoreFactory(),
                     ReadThrough = true,
-                    WriteThrough = true
+                    WriteThrough = true,
+                    KeepBinaryInStore = false   // Store works with concrete classes.
                 });
 
                 var posts = ignite.GetOrCreateCache<int, Post>(new CacheConfiguration
@@ -27,7 +30,8 @@ namespace IgniteEFCacheStore
                     Name = "posts",
                     CacheStoreFactory = new PostCacheStoreFactory(),
                     ReadThrough = true,
-                    WriteThrough = true
+                    WriteThrough = true,
+                    KeepBinaryInStore = false   // Store works with concrete classes.
                 });
 
                 Console.WriteLine("\n>>> Example started\n\n");
@@ -37,16 +41,44 @@ namespace IgniteEFCacheStore
                 posts.LoadCache(null);
 
                 // Show all posts with their blogs.
-                foreach (var post in posts)  // Cache iterator does not go to store.
-                {
-                    Console.WriteLine("Retrieving blog with id {0}...", post.Value.BlogId);
-                    var blog = blogs[post.Value.BlogId];  // Retrieving by key goes to store.
+                DisplayData(posts, blogs);
 
-                    Console.WriteLine(">>> Post '{0}' in blog '{1}'", post.Value.Title, blog.Name);
-                }
+                // Add new data to cache.
+                Console.WriteLine("Adding new post to existing blog..");
+
+                var postId = posts.Max(x => x.Key) + 1;  // Generate new id.
+
+                posts[1] = new Post
+                {
+                    BlogId = blogs.Min(x => x.Key), // Existing blog
+                    PostId = postId,
+                    Title = "New Post From Ignite"
+                };
+
+                // Show all posts with their blogs.
+                DisplayData(posts, blogs);
+
+                // Remove newly added post.
+                Console.WriteLine("Removing post with id {0}...", postId);
+                posts.Remove(postId);
 
                 Console.WriteLine("\n>>> Example finished.\n");
             }
+        }
+
+        private static void DisplayData(ICache<int, Post> posts, ICache<int, Blog> blogs)
+        {
+            Console.WriteLine("\n>>> List of all posts:");
+
+            foreach (var post in posts) // Cache iterator does not go to store.
+            {
+                Console.WriteLine("Retrieving blog with id {0}...", post.Value.BlogId);
+                var blog = blogs[post.Value.BlogId]; // Retrieving by key goes to store.
+
+                Console.WriteLine(">>> Post '{0}' in blog '{1}'", post.Value.Title, blog.Name);
+            }
+
+            Console.WriteLine(">>> End list.\n");
         }
 
         private static void InitializeDb()
