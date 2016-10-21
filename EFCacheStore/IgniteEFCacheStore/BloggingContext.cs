@@ -24,6 +24,7 @@ namespace IgniteEFCacheStore
         public int BlogId { get; set; }
         public string Name { get; set; }
 
+        // Navigation property
         public virtual List<Post> Posts { get; set; }
     }
 
@@ -34,8 +35,9 @@ namespace IgniteEFCacheStore
         public int PostId { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
-
         public int BlogId { get; set; }
+
+        // Navigation property
         public virtual Blog Blog { get; set; }
     }
 }
