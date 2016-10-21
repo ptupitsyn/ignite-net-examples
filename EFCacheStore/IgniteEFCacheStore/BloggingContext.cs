@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 
 namespace IgniteEFCacheStore
@@ -18,6 +19,7 @@ namespace IgniteEFCacheStore
     public class Blog
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int BlogId { get; set; }
         public string Name { get; set; }
 
@@ -27,6 +29,7 @@ namespace IgniteEFCacheStore
     public class Post
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int PostId { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
