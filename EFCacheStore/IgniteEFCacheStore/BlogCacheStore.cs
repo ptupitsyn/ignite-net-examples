@@ -14,6 +14,8 @@ namespace IgniteEFCacheStore
     {
         public void LoadCache(Action<object, object> act, params object[] args)
         {
+            Console.WriteLine("{0}.LoadCache() called.", GetType().Name);
+
             // Load everything from DB to Ignite
             using (var ctx = GetDbContext())
             {
@@ -26,6 +28,8 @@ namespace IgniteEFCacheStore
 
         public object Load(object key)
         {
+            Console.WriteLine("{0}.Load({1}) called.", GetType().Name, key);
+
             using (var ctx = GetDbContext())
             {
                 return ctx.Blogs.Find(key);
@@ -42,6 +46,8 @@ namespace IgniteEFCacheStore
 
         public void Write(object key, object val)
         {
+            Console.WriteLine("{0}.Write({1}, {2}) called.", GetType().Name, key, val);
+
             using (var ctx = GetDbContext())
             {
                 ctx.Blogs.AddOrUpdate((Blog) val);
@@ -65,6 +71,8 @@ namespace IgniteEFCacheStore
 
         public void Delete(object key)
         {
+            Console.WriteLine("{0}.Delete({1}) called.", GetType().Name, key);
+
             using (var ctx = GetDbContext())
             {
                 var blog = ctx.Blogs.Find(key);

@@ -22,7 +22,7 @@ namespace IgniteEFCacheStore
                     WriteThrough = true
                 });
 
-                var posts = ignite.GetOrCreateCache<int, Blog>(new CacheConfiguration
+                var posts = ignite.GetOrCreateCache<int, Post>(new CacheConfiguration
                 {
                     Name = "posts",
                     CacheStoreFactory = new PostCacheStoreFactory(),
@@ -30,13 +30,22 @@ namespace IgniteEFCacheStore
                     WriteThrough = true
                 });
 
-                blogs.LoadCache(null);
+                Console.WriteLine("\n>>> Example started\n\n");
+
+                // Load all posts, but do not load blogs.
+                Console.WriteLine("Calling ICache.LoadCache...");
                 posts.LoadCache(null);
 
-                foreach (var blog in blogs)
+                // Show all posts with their blogs.
+                foreach (var post in posts)  // Cache iterator does not go to store.
                 {
-                    Console.WriteLine(blog.Value.Name);
+                    Console.WriteLine("Retrieving blog with id {0}...", post.Value.BlogId);
+                    var blog = blogs[post.Value.BlogId];  // Retrieving by key goes to store.
+
+                    Console.WriteLine(">>> Post '{0}' in blog '{1}'", post.Value.Title, blog.Name);
                 }
+
+                Console.WriteLine("\n>>> Example finished.\n");
             }
         }
 
