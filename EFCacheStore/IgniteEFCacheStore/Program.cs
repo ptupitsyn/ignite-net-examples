@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Apache.Ignite.Core;
+using Apache.Ignite.Core.Cache.Configuration;
 
 namespace IgniteEFCacheStore
 {
@@ -8,9 +10,34 @@ namespace IgniteEFCacheStore
     {
         public static void Main(string[] args)
         {
-            //Ignition.StartFromApplicationConfiguration();
-
             InitializeDb();
+
+            using (var ignite = Ignition.StartFromApplicationConfiguration())
+            {
+                var blogs = ignite.GetOrCreateCache<int, Blog>(new CacheConfiguration
+                {
+                    Name = "blogs",
+                    CacheStoreFactory = new BlogCacheStoreFactory(),
+                    ReadThrough = true,
+                    WriteThrough = true
+                });
+
+                var posts = ignite.GetOrCreateCache<int, Blog>(new CacheConfiguration
+                {
+                    Name = "posts",
+                    CacheStoreFactory = new PostCacheStoreFactory(),
+                    ReadThrough = true,
+                    WriteThrough = true
+                });
+
+                blogs.LoadCache(null);
+                posts.LoadCache(null);
+
+                foreach (var blog in blogs)
+                {
+                    Console.WriteLine(blog.Value.Name);
+                }
+            }
         }
 
         private static void InitializeDb()

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Data.Entity.Migrations;
 using System.Linq;
 using Apache.Ignite.Core.Cache.Store;
+using Apache.Ignite.Core.Common;
 
 namespace IgniteEFCacheStore
 {
@@ -92,7 +93,23 @@ namespace IgniteEFCacheStore
 
         private static BloggingContext GetDbContext()
         {
-            return new BloggingContext();
+            return new BloggingContext
+            {
+                Configuration =
+                {
+                    // Disable EF proxies so that Ignite serialization works.
+                    ProxyCreationEnabled = false
+                }
+            };
+        }
+    }
+
+    [Serializable]
+    public class PostCacheStoreFactory : IFactory<ICacheStore>
+    {
+        public ICacheStore CreateInstance()
+        {
+            return new PostCacheStore();
         }
     }
 }
