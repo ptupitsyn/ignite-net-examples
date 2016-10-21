@@ -11,7 +11,7 @@ namespace IgniteEFCacheStore
     /// Generic EF cache store.
     /// </summary>
     public class EntityFrameworkCacheStore<TEntity, TContext> : ICacheStore 
-        where TEntity : class where TContext : DbContext
+        where TEntity : class, new() where TContext : DbContext
     {
         private readonly Func<TContext> _getContext;
 
@@ -19,12 +19,27 @@ namespace IgniteEFCacheStore
 
         private readonly Func<TEntity, object> _getKey;
 
+        private readonly Action<TEntity, object> _setKey;
+
         public EntityFrameworkCacheStore(Func<TContext> getContext, Func<TContext, IDbSet<TEntity>> getDbSet, 
-            Func<TEntity, object> getKey)
+            Func<TEntity, object> getKey, Action<TEntity, object> setKey)
         {
+            if (getContext == null)
+                throw new ArgumentNullException(nameof(getContext));
+
+            if (getDbSet == null)
+                throw new ArgumentNullException(nameof(getDbSet));
+
+            if (getKey == null)
+                throw new ArgumentNullException(nameof(getKey));
+
+            if (setKey == null)
+                throw new ArgumentNullException(nameof(setKey));
+
             _getContext = getContext;
             _getDbSet = getDbSet;
             _getKey = getKey;
+            _setKey = setKey;
         }
 
         public void LoadCache(Action<object, object> act, params object[] args)
@@ -53,10 +68,10 @@ namespace IgniteEFCacheStore
 
         public IDictionary LoadAll(ICollection keys)
         {
-            using (var ctx = _getContext())
-            {
-                return keys.Cast<int>().ToDictionary(key => key, key => _getDbSet(ctx).Find(key));
-            }
+            Console.WriteLine("{0}.LoadAll({1}) called.", GetType().Name, keys);
+
+            // TODO: Load in one SQL query.
+            return keys.OfType<object>().ToDictionary(x => x, Load);
         }
 
         public void Write(object key, object val)
@@ -65,7 +80,7 @@ namespace IgniteEFCacheStore
 
             using (var ctx = _getContext())
             {
-                _getDbSet(ctx).AddOrUpdate((TEntity)val);
+                _getDbSet(ctx).AddOrUpdate((TEntity) val);
 
                 ctx.SaveChanges();
             }
@@ -73,6 +88,8 @@ namespace IgniteEFCacheStore
 
         public void WriteAll(IDictionary entries)
         {
+            Console.WriteLine("{0}.WriteAll({1}) called.", GetType().Name, entries);
+
             using (var ctx = _getContext())
             {
                 foreach (var entity in entries.Values.OfType<TEntity>())
@@ -90,22 +107,32 @@ namespace IgniteEFCacheStore
 
             using (var ctx = _getContext())
             {
-                var entity = _getDbSet(ctx).Find(key);
+                var entity = new TEntity();
+                _setKey(entity, key);
 
-                if (entity != null)
-                {
-                    _getDbSet(ctx).Remove(entity);
+                _getDbSet(ctx).Remove(entity);
 
-                    ctx.SaveChanges();
-                }
+                ctx.SaveChanges();
             }
         }
 
         public void DeleteAll(ICollection keys)
         {
-            foreach (var key in keys)
+            Console.WriteLine("{0}.DeleteAll({1}) called.", GetType().Name, keys);
+
+            using (var ctx = _getContext())
             {
-                Delete(key);
+                var dbSet = _getDbSet(ctx);
+
+                foreach (var key in keys)
+                {
+                    var entity = new TEntity();
+                    _setKey(entity, key);
+
+                    dbSet.Remove(entity);
+                }
+
+                ctx.SaveChanges();
             }
         }
 
