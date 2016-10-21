@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 namespace IgniteEFCacheStore
 {
     public class BloggingContext : DbContext
