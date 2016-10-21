@@ -110,7 +110,10 @@ namespace IgniteEFCacheStore
                 var entity = new TEntity();
                 _setKey(entity, key);
 
-                _getDbSet(ctx).Remove(entity);
+                var dbSet = _getDbSet(ctx);
+
+                dbSet.Attach(entity);
+                dbSet.Remove(entity);
 
                 ctx.SaveChanges();
             }
@@ -129,6 +132,7 @@ namespace IgniteEFCacheStore
                     var entity = new TEntity();
                     _setKey(entity, key);
 
+                    dbSet.Attach(entity);
                     dbSet.Remove(entity);
                 }
 

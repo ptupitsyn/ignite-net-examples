@@ -119,6 +119,18 @@ namespace IgniteEFCacheStore
         public ICacheStore CreateInstance()
         {
             return new PostCacheStore();
+
+            /*
+            return new EntityFrameworkCacheStore<Post, BloggingContext>(
+                () => new BloggingContext {Configuration = {ProxyCreationEnabled = false}},
+                ctx => ctx.Posts,
+                post => post.PostId,
+                (post, key) =>
+                {
+                    post.PostId = (int) key;
+                });
+
+            */
         }
     }
 }
