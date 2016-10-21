@@ -106,6 +106,7 @@ namespace IgniteEFCacheStore
                 Configuration =
                 {
                     // Disable EF proxies so that Ignite serialization works.
+                    // https://apacheignite-net.readme.io/docs/serialization#using-entity-framework-pocos
                     ProxyCreationEnabled = false
                 }
             };
