@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PostCacheStore.cs" />
     <Compile Include="BlogCacheStore.cs" />
     <Compile Include="BloggingContext.cs" />
     <Compile Include="Program.cs" />
