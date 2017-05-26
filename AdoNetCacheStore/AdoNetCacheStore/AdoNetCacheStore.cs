@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlServerCe;
+using System.IO;
 using Apache.Ignite.Core.Cache.Store;
 using Apache.Ignite.Core.Common;
 
@@ -7,6 +9,10 @@ namespace AdoNetCacheStore
 {
     public class AdoNetCacheStore : ICacheStore<int, string>
     {
+        public const string DbName = "cars.db";
+
+        public const string ConnectionString = "DataSource=" + DbName;
+
         public void LoadCache(Action<int, string> act, params object[] args)
         {
             throw new NotImplementedException();
@@ -46,6 +52,26 @@ namespace AdoNetCacheStore
         {
             throw new NotImplementedException();
         }
+
+        public static void InitializeDb()
+        {
+            File.Delete(DbName);
+
+            using (var engine = new SqlCeEngine(ConnectionString))
+            {
+                engine.CreateDatabase();
+            }
+
+            using (var conn = new SqlCeConnection(ConnectionString))
+            {
+                using (var cmd = new SqlCeCommand(@"CREATE TABLE Cars (ID int, Name NVARCHAR(200), Power int)", conn))
+                {
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
     }
 
     public class AdoNetCacheStoreFactory : IFactory<AdoNetCacheStore>
