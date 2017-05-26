@@ -32,7 +32,6 @@ namespace AdoNetCacheStore
 
                 cars[1] = car;
             }
-
         }
     }
 }

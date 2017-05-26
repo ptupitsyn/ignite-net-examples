@@ -46,6 +46,8 @@ namespace AdoNetCacheStore
 
         public IBinaryObject Load(int key)
         {
+            Console.WriteLine("{0}.Load({1}) called.", GetType().Name, key);
+
             using (var conn = new SqlCeConnection(ConnectionString))
             {
                 using (var cmd = new SqlCeCommand(@"SELECT Name, Power FROM Cars WHERE Id = @id", conn))
@@ -77,6 +79,8 @@ namespace AdoNetCacheStore
 
         public void Write(int key, IBinaryObject val)
         {
+            Console.WriteLine("{0}.Write({1}, {2}) called.", GetType().Name, key, val);
+
             using (var conn = new SqlCeConnection(ConnectionString))
             {
                 using (var cmd = new SqlCeCommand(@"INSERT INTO Cars (ID, name, Power) VALUES (@id, @name, @power)", conn))
