@@ -19,8 +19,8 @@ namespace AdoNetCacheStore
                 var cacheCfg = new CacheConfiguration
                 {
                     Name = "cars",
-                    KeepBinaryInStore = true,
                     CacheStoreFactory = new AdoNetCacheStoreFactory(),
+                    KeepBinaryInStore = true,
                     ReadThrough = true,
                     WriteThrough = true
                 };

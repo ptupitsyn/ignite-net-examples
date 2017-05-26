@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlServerCe;
 using System.IO;
 using System.Linq;
@@ -55,19 +56,18 @@ namespace AdoNetCacheStore
                     cmd.Parameters.AddWithValue("@id", key);
 
                     conn.Open();
-                    using (var reader = cmd.ExecuteReader())
+
+                    foreach (IDataRecord row in cmd.ExecuteReader())
                     {
-                        if (reader.Read())
-                        {
-                            return Ignite.GetBinary()
-                                .GetBuilder("Car")
-                                .SetStringField("Name", reader.GetString(0))
-                                .SetIntField("Power", reader.GetInt32(1))
-                                .Build();
-                        }
-                        
-                        return null;
+                        // Return first record.
+                        return Ignite.GetBinary()
+                            .GetBuilder("Car")
+                            .SetStringField("Name", row.GetString(0))
+                            .SetIntField("Power", row.GetInt32(1))
+                            .Build();
                     }
+
+                    return null;
                 }
             }
         }
