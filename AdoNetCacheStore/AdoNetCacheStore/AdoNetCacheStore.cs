@@ -77,7 +77,18 @@ namespace AdoNetCacheStore
 
         public void Write(int key, IBinaryObject val)
         {
-            throw new NotImplementedException();
+            using (var conn = new SqlCeConnection(ConnectionString))
+            {
+                using (var cmd = new SqlCeCommand(@"INSERT INTO Cars (ID, name, Power) VALUES (@id, @name, @power)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", key);
+                    cmd.Parameters.AddWithValue("@name", val.GetField<string>("Name"));
+                    cmd.Parameters.AddWithValue("@power", val.GetField<int>("Power"));
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
         public void WriteAll(IEnumerable<KeyValuePair<int, IBinaryObject>> entries)
