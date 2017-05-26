@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Data;
+using System.Data.SqlServerCe;
 using Apache.Ignite.Core;
 using Apache.Ignite.Core.Binary;
 using Apache.Ignite.Core.Cache;
@@ -43,6 +45,26 @@ namespace AdoNetCacheStore
                 Console.WriteLine("Requesting key from Ignite cache...");
                 IBinaryObject carFromStore = cars.Get(1);
                 Console.WriteLine("Entry from cache store: " + carFromStore);
+
+                // Read data from SQL server directly.
+                Console.WriteLine("\nData from SQL server:");
+                using (var conn = new SqlCeConnection(AdoNetCacheStore.ConnectionString))
+                {
+                    using (var cmd = new SqlCeCommand(@"SELECT * FROM Cars", conn))
+                    {
+                        conn.Open();
+
+                        foreach (IDataRecord row in cmd.ExecuteReader())
+                        {
+                            Console.WriteLine("SQL row: ");
+                            for (var i = 0; i < row.FieldCount; i++)
+                            {
+                                Console.Write(row.GetValue(i) + "; ");
+                            }
+                        }
+                    }
+                }
+                Console.WriteLine();
             }
         }
     }
