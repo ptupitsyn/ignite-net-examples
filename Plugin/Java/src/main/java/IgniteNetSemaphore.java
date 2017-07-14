@@ -7,10 +7,10 @@ import org.apache.ignite.internal.processors.platform.PlatformTarget;
 import org.apache.ignite.internal.processors.platform.memory.PlatformMemory;
 import org.jetbrains.annotations.Nullable;
 
-public class IgniteNetSempahore implements PlatformTarget {
+public class IgniteNetSemaphore implements PlatformTarget {
     private final IgniteSemaphore semaphore;
 
-    public IgniteNetSempahore(IgniteSemaphore semaphore) {
+    public IgniteNetSemaphore(IgniteSemaphore semaphore) {
         this.semaphore = semaphore;
     }
 

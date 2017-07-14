@@ -15,6 +15,15 @@ public class IgniteNetPluginTarget implements PlatformTarget {
         this.ignite = ignite;
     }
 
+    public PlatformTarget processInStreamOutObject(int i, BinaryRawReaderEx binaryRawReaderEx) throws IgniteCheckedException {
+        String name = binaryRawReaderEx.readString();
+        int count = binaryRawReaderEx.readInt();
+
+        IgniteSemaphore semaphore = ignite.semaphore(name, count, true, true);
+
+        return new IgniteNetSemaphore(semaphore);
+    }
+
     public long processInLongOutLong(int i, long l) throws IgniteCheckedException {
         return 0;
     }
@@ -29,15 +38,6 @@ public class IgniteNetPluginTarget implements PlatformTarget {
 
     public void processInStreamOutStream(int i, BinaryRawReaderEx binaryRawReaderEx, BinaryRawWriterEx binaryRawWriterEx) throws IgniteCheckedException {
 
-    }
-
-    public PlatformTarget processInStreamOutObject(int i, BinaryRawReaderEx binaryRawReaderEx) throws IgniteCheckedException {
-        String name = binaryRawReaderEx.readString();
-        int count = binaryRawReaderEx.readInt();
-
-        IgniteSemaphore semaphore = ignite.semaphore(name, count, true, true);
-
-        return new IgniteNetSempahore(semaphore);
     }
 
     public PlatformTarget processInObjectStreamOutObjectStream(int i, @Nullable PlatformTarget platformTarget, BinaryRawReaderEx binaryRawReaderEx, BinaryRawWriterEx binaryRawWriterEx) throws IgniteCheckedException {
