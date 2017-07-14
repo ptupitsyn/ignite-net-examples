@@ -2,7 +2,7 @@
 
 namespace IgnitePlugin
 {
-    public static class IgniteExtensions
+    internal static class IgniteExtensions
     {
         public static Semaphore GetOrCreateSemaphore(this IIgnite ignite, string name, int count)
         {

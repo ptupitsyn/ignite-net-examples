@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Apache.Ignite.Core.Interop;
+﻿using Apache.Ignite.Core.Interop;
 
 namespace IgnitePlugin
 {
-    public class Semaphore
+    internal class Semaphore
     {
         private readonly IPlatformTarget _target;
 

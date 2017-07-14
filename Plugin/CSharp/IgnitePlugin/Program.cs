@@ -5,9 +5,9 @@ using Apache.Ignite.Core;
 
 namespace IgnitePlugin
 {
-    static class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var cfg = new IgniteConfiguration
             {

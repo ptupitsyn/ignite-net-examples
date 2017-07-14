@@ -3,7 +3,7 @@ using Apache.Ignite.Core.Plugin;
 
 namespace IgnitePlugin
 {
-    class SemaphorePlugin
+    internal class SemaphorePlugin
     {
         private readonly IPlatformTarget _target;
 

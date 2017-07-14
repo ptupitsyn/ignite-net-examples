@@ -2,7 +2,7 @@
 
 namespace IgnitePlugin
 {
-    class SemaphorePluginProvider : IPluginProvider<SemaphorePluginConfiguration>
+    internal class SemaphorePluginProvider : IPluginProvider<SemaphorePluginConfiguration>
     {
         private SemaphorePlugin _plugin;
 
