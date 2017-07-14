@@ -7,7 +7,7 @@ namespace IgnitePlugin
 {
     internal static class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             var cfg = new IgniteConfiguration
             {
@@ -15,18 +15,28 @@ namespace IgnitePlugin
                 PluginConfigurations = new[] {new SemaphorePluginConfiguration()}
             };
 
-            Ignition.Start(cfg);
+            var ignite = Ignition.Start(cfg);
+            var cluster = ignite.GetCluster();
+            var nodeId = cluster.GetLocalNode().Order;
 
-            for (var i = 0; i < 10; i++)
+            // Wait for second node
+            while (cluster.GetNodes().Count < 2)
             {
+                Thread.Sleep(10);
+            }
+
+            for (var i = 0; i < 20; i++)
+            {
+                Thread.Sleep(300);
+
                 var id = i;
-                Task.Run(() => RunThread(id));
+                Task.Run(() => RunThread($"{nodeId}:{id}"));
             }
 
             Console.ReadKey();
         }
 
-        private static void RunThread(int id)
+        private static void RunThread(string id)
         {
             var sem = Ignition.GetIgnite().GetOrCreateSemaphore("foo", 2);
 
