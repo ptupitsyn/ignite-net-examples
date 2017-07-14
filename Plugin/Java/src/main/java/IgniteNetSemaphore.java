@@ -15,6 +15,9 @@ public class IgniteNetSemaphore implements PlatformTarget {
     }
 
     public long processInLongOutLong(int i, long l) throws IgniteCheckedException {
+        if (i == 0) semaphore.acquire();
+        else semaphore.release();
+
         return 0;
     }
 

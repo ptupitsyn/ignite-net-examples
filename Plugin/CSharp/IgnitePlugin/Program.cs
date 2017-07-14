@@ -6,7 +6,12 @@ namespace IgnitePlugin
     {
         static void Main(string[] args)
         {
-            Ignition.Start();
+            var cfg = new IgniteConfiguration
+            {
+                JvmClasspath = @"..\..\..\..\Java\target\IgniteNetSemaphorePlugin-1.0-SNAPSHOT.jar"
+            };
+
+            Ignition.Start(cfg);
         }
     }
 }

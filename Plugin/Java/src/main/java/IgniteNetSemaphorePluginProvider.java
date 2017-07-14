@@ -33,7 +33,7 @@ public class IgniteNetSemaphorePluginProvider implements PluginProvider<IgniteNe
     }
 
     public <T extends IgnitePlugin> T plugin() {
-        return null;
+        return (T) new IgniteNetSemaphorePlugin();
     }
 
     @Nullable
