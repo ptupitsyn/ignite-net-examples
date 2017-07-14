@@ -8,10 +8,16 @@ namespace IgnitePlugin
         {
             var cfg = new IgniteConfiguration
             {
-                JvmClasspath = @"..\..\..\..\Java\target\IgniteNetSemaphorePlugin-1.0-SNAPSHOT.jar"
+                JvmClasspath = @"..\..\..\..\Java\target\IgniteNetSemaphorePlugin-1.0-SNAPSHOT.jar",
+                PluginConfigurations = new[] {new SemaphorePluginConfiguration()}
             };
 
-            Ignition.Start(cfg);
+            var ignite = Ignition.Start(cfg);
+
+            var sem = ignite.GetOrCreateSemaphore("foo", 2);
+
+            sem.WaitOne();
+            sem.Release();
         }
     }
 }

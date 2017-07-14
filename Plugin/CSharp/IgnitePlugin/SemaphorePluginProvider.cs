@@ -31,7 +31,8 @@ namespace IgnitePlugin
             // No-op.
         }
 
-        public string Name { get; }
-        public string Copyright { get; }
+        public string Name => "semaphorePlugin";
+
+        public string Copyright => "(c)";
     }
 }
