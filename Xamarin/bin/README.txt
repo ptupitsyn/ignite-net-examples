@@ -1,0 +1,1 @@
+System.Configuration.dll (taken from .NET 4.0) is required at build time to satisfy Xamarin dependency resolution. Not required at run time.
