@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <Reference Include="System.Configuration">
-      <HintPath>..\..\..\..\..\..\..\Windows\Microsoft.NET\Framework\v4.0.30319\System.Configuration.dll</HintPath>
+      <HintPath>..\..\bin\System.Configuration.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
