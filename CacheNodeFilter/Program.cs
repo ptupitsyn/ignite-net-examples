@@ -24,8 +24,9 @@ namespace CacheNodeFilter
                 new IgniteConfiguration {ClientMode = true, Localhost = "127.0.0.1"});
 
             var userPartitionsOnUserNode = client.GetAffinity("user").GetAllPartitions(userNode).Length;
-            var userPartitionsOnCompanyNode = client.GetAffinity("user").GetAllPartitions(userNode).Length;
+            var userPartitionsOnCompanyNode = client.GetAffinity("user").GetAllPartitions(companyNode).Length;
             
+            // All user cache data (partitions) are on user node, none on company node:
             Console.WriteLine($"User partitions on user node: {userPartitionsOnUserNode}, on company node: {userPartitionsOnCompanyNode}");
         }
     }
