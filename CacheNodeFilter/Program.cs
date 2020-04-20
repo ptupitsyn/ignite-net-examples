@@ -1,4 +1,5 @@
 ﻿using System;
+using Apache.Ignite.Core;
 
 namespace CacheNodeFilter
 {
@@ -6,7 +7,7 @@ namespace CacheNodeFilter
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Ignition.Start("ignite-spring-config.xml");
         }
     }
 }
