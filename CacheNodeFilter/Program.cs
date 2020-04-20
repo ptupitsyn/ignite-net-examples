@@ -5,7 +5,7 @@ namespace CacheNodeFilter
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             // Start Ignite server with Users.
             var userServer = Ignition.Start(
