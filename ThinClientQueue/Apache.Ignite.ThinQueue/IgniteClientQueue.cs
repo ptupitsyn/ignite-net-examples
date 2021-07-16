@@ -19,8 +19,14 @@ namespace Apache.Ignite.ThinQueue
 
         private readonly IIgniteClient _client;
 
+        /// <summary>
+        /// Queue where every element has an Id of the previous.
+        /// </summary>
         private readonly ICacheClient<Guid, (T Value, Guid Prev)> _cache;
 
+        /// <summary>
+        /// Counter: single cache value with an Id of the queue head.
+        /// </summary>
         private readonly ICacheClient<int, (int Count, Guid Id)> _cacheCounter;
 
         private readonly object _querySyncRoot = new object();
