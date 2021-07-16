@@ -68,7 +68,7 @@ namespace Apache.Ignite.ThinQueue
 
                 if (_cacheCounter.Replace(key: CounterId, oldVal: count, newVal: count - 1))
                 {
-                    result = _cache[count - 1];
+                    result = _cache.GetAndRemove(count - 1).Value;
 
                     return true;
                 }
