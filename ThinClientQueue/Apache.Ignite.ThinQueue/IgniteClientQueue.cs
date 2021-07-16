@@ -45,7 +45,7 @@ namespace Apache.Ignite.ThinQueue
             {
                 var count = _cacheCounter[CounterId];
 
-                if (_cacheCounter.Replace(CounterId, count, count + 1))
+                if (_cacheCounter.Replace(key: CounterId, oldVal: count, newVal: count + 1))
                 {
                     _cache[count] = item;
 
@@ -66,7 +66,7 @@ namespace Apache.Ignite.ThinQueue
                     return false;
                 }
 
-                if (_cacheCounter.Replace(CounterId, count, count - 1))
+                if (_cacheCounter.Replace(key: CounterId, oldVal: count, newVal: count - 1))
                 {
                     result = _cache[count - 1];
 
