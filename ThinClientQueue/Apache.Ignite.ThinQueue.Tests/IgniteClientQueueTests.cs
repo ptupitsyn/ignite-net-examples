@@ -44,10 +44,14 @@ namespace Apache.Ignite.ThinQueue.Tests
             var queue1 = client1.GetQueue<int>("my-queue");
             var queue2 = client1.GetQueue<int>("my-queue");
 
+            Assert.AreEqual(0, queue1.Count);
             Assert.IsFalse(queue1.TryDequeue(out _));
 
             queue1.Enqueue(1);
             queue2.Enqueue(2);
+
+            Assert.AreEqual(2, queue1.Count);
+            Assert.AreEqual(2, queue2.Count);
 
             Assert.AreEqual(2, queue1.Dequeue());
             Assert.AreEqual(1, queue2.TryDequeue(out var r) ? r : -1);

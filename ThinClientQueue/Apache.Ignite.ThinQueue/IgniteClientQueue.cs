@@ -37,25 +37,7 @@ namespace Apache.Ignite.ThinQueue
             _cacheCounter.PutIfAbsent(CounterId, 0);
         }
 
-        void ICacheEntryEventListener<int, T>.OnEvent(IEnumerable<ICacheEntryEvent<int, T>> evts)
-        {
-            lock (_querySyncRoot)
-            {
-                Monitor.Pulse(_querySyncRoot);
-            }
-        }
-
-        public void Close()
-        {
-            try
-            {
-                _client.DestroyCache(_cache.Name);
-            }
-            catch (IgniteException e) when (e.Message.StartsWith("Cache does not exist", StringComparison.Ordinal))
-            {
-                // Ignore: already closed.
-            }
-        }
+        public int Count => _cacheCounter[CounterId];
 
         public void Enqueue(T item)
         {
@@ -129,6 +111,26 @@ namespace Apache.Ignite.ThinQueue
 
                     Monitor.Wait(_querySyncRoot);
                 }
+            }
+        }
+
+        public void Close()
+        {
+            try
+            {
+                _client.DestroyCache(_cache.Name);
+            }
+            catch (IgniteException e) when (e.Message.StartsWith("Cache does not exist", StringComparison.Ordinal))
+            {
+                // Ignore: already closed.
+            }
+        }
+
+        void ICacheEntryEventListener<int, T>.OnEvent(IEnumerable<ICacheEntryEvent<int, T>> evts)
+        {
+            lock (_querySyncRoot)
+            {
+                Monitor.Pulse(_querySyncRoot);
             }
         }
     }
