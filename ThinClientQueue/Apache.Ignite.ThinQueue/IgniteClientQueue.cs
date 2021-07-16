@@ -33,6 +33,8 @@ namespace Apache.Ignite.ThinQueue
             _client = client;
 
             _cache = client.GetOrCreateCache<int, T>(name);
+
+            // Use the same cache with different value type to store the ID counter.
             _cacheCounter = _cache.WithKeepBinary<int, int>();
             _cacheCounter.PutIfAbsent(CounterId, 0);
         }
