@@ -4,6 +4,7 @@ using Apache.Ignite.Core.Cache.Event;
 using Apache.Ignite.Core.Client;
 using Apache.Ignite.Core.Client.Cache;
 using Apache.Ignite.Core.Client.Cache.Query.Continuous;
+using Apache.Ignite.Core.Common;
 using Apache.Ignite.Core.Impl.Common;
 
 namespace Apache.Ignite.ThinQueue
@@ -13,15 +14,17 @@ namespace Apache.Ignite.ThinQueue
     /// </summary>
     public sealed class IgniteClientQueue<T> : ICacheEntryEventListener<long, T>, IDisposable
     {
-        private const long CounterId = -1;
+        private const int CounterId = -1;
 
         private readonly IIgniteClient _client;
 
-        private readonly ICacheClient<long, T> _cache;
+        private readonly ICacheClient<int, T> _cache;
 
-        private readonly ICacheClient<long, long> _cacheCounter;
+        private readonly ICacheClient<int, int> _cacheCounter;
 
-        // private readonly IContinuousQueryHandleClient _queryHandle;
+        private readonly object _querySyncRoot = new object();
+
+        private IContinuousQueryHandleClient _queryHandle;
 
         public IgniteClientQueue(IIgniteClient client, string name)
         {
@@ -30,14 +33,12 @@ namespace Apache.Ignite.ThinQueue
 
             _client = client;
 
-            _cache = client.GetOrCreateCache<long, T>(name);
-            _cacheCounter = _cache.WithKeepBinary<long, long>();
+            _cache = client.GetOrCreateCache<int, T>(name);
+            _cacheCounter = _cache.WithKeepBinary<int, int>();
             _cacheCounter.PutIfAbsent(CounterId, 0);
-
-            // _queryHandle = _cache.QueryContinuous(new ContinuousQueryClient<long, T>(this));
         }
 
-        public void OnEvent(IEnumerable<ICacheEntryEvent<long, T>> evts)
+        void ICacheEntryEventListener<long, T>.OnEvent(IEnumerable<ICacheEntryEvent<long, T>> evts)
         {
             throw new NotImplementedException();
         }
@@ -45,6 +46,59 @@ namespace Apache.Ignite.ThinQueue
         public void Close()
         {
             _client.DestroyCache(_cache.Name);
+        }
+
+        public void Enqueue(T item)
+        {
+            while (true)
+            {
+                var count = _cacheCounter[CounterId];
+
+                if (_cacheCounter.Replace(CounterId, count, count + 1))
+                {
+                    _cache[count] = item;
+
+                    return;
+                }
+            }
+        }
+
+        public bool TryDequeue(out T result)
+        {
+            while (true)
+            {
+                var count = _cacheCounter[CounterId];
+
+                if (count == 0)
+                {
+                    result = default;
+                    return false;
+                }
+
+                if (_cacheCounter.Replace(CounterId, count, count - 1))
+                {
+                    result = _cache[count - 1];
+
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Dequeue or throw when empty.
+        /// </summary>
+        public T Dequeue() =>
+            TryDequeue(out var result)
+                ? result
+                : throw new IgniteException("Queue is empty");
+
+        /// <summary>
+        /// Blocking dequeue: waits for an item to be available.
+        /// </summary>
+        public T Take()
+        {
+            // TODO: Lock and cont query.
+            throw new NotImplementedException();
         }
 
         public void Dispose()
