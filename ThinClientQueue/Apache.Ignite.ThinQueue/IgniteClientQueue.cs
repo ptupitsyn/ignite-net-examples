@@ -69,7 +69,10 @@ namespace Apache.Ignite.ThinQueue
                     return false;
                 }
 
-                var res = _cache.Get(count.Id);
+                if (!_cache.TryGet(count.Id, out var res))
+                {
+                    continue;
+                }
 
                 if (_cacheCounter.Replace(key: CounterId, oldVal: count, newVal: (count.Count - 1, res.Prev)))
                 {
