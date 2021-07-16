@@ -13,15 +13,15 @@ namespace Apache.Ignite.ThinQueue
     /// <summary>
     /// Distributed thin client Ignite queue.
     /// </summary>
-    public sealed class IgniteClientQueue<T> : ICacheEntryEventListener<int, T>
+    public sealed class IgniteClientQueue<T> : ICacheEntryEventListener<Guid, (T, Guid)>
     {
         private const int CounterId = -1;
 
         private readonly IIgniteClient _client;
 
-        private readonly ICacheClient<int, T> _cache;
+        private readonly ICacheClient<Guid, (T Value, Guid Prev)> _cache;
 
-        private readonly ICacheClient<int, int> _cacheCounter;
+        private readonly ICacheClient<int, (int Count, Guid Id)> _cacheCounter;
 
         private readonly object _querySyncRoot = new object();
 
@@ -32,24 +32,25 @@ namespace Apache.Ignite.ThinQueue
 
             _client = client;
 
-            _cache = client.GetOrCreateCache<int, T>(name);
+            _cache = client.GetOrCreateCache<Guid, (T, Guid)>(name);
 
             // Use the same cache with different value type to store the ID counter.
-            _cacheCounter = _cache.WithKeepBinary<int, int>();
-            _cacheCounter.PutIfAbsent(CounterId, 0);
+            _cacheCounter = client.GetCache<int, (int, Guid)>(name);
+            _cacheCounter.PutIfAbsent(CounterId, (0, Guid.NewGuid()));
         }
 
-        public int Count => _cacheCounter[CounterId];
+        public int Count => _cacheCounter[CounterId].Item1;
 
         public void Enqueue(T item)
         {
             while (true)
             {
                 var count = _cacheCounter[CounterId];
+                var newCount = (count.Count + 1, Id: Guid.NewGuid());
 
-                if (_cacheCounter.Replace(key: CounterId, oldVal: count, newVal: count + 1))
+                if (_cacheCounter.Replace(key: CounterId, oldVal: count, newVal: newCount))
                 {
-                    _cache[count] = item;
+                    _cache[newCount.Id] = (Value: item, Prev: count.Id);
 
                     return;
                 }
@@ -62,15 +63,18 @@ namespace Apache.Ignite.ThinQueue
             {
                 var count = _cacheCounter[CounterId];
 
-                if (count == 0)
+                if (count.Count == 0)
                 {
                     result = default;
                     return false;
                 }
 
-                if (_cacheCounter.Replace(key: CounterId, oldVal: count, newVal: count - 1))
+                var res = _cache.Get(count.Id);
+
+                if (_cacheCounter.Replace(key: CounterId, oldVal: count, newVal: (count.Count - 1, res.Prev)))
                 {
-                    result = _cache.GetAndRemove(count - 1).Value;
+                    result = res.Value;
+                    _cache.Remove(count.Id);
 
                     return true;
                 }
@@ -97,7 +101,7 @@ namespace Apache.Ignite.ThinQueue
 
             lock (_querySyncRoot)
             {
-                using var query = _cache.QueryContinuous(new ContinuousQueryClient<int, T>(this));
+                using var query = _cache.QueryContinuous(new ContinuousQueryClient<Guid, (T, Guid)>(this));
 
                 while (true)
                 {
@@ -123,7 +127,7 @@ namespace Apache.Ignite.ThinQueue
             }
         }
 
-        void ICacheEntryEventListener<int, T>.OnEvent(IEnumerable<ICacheEntryEvent<int, T>> evts)
+        void ICacheEntryEventListener<Guid, (T, Guid)>.OnEvent(IEnumerable<ICacheEntryEvent<Guid, (T, Guid)>> evts)
         {
             lock (_querySyncRoot)
             {
