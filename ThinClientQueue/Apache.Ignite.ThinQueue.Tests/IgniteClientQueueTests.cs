@@ -61,7 +61,7 @@ namespace Apache.Ignite.ThinQueue.Tests
         }
 
         [Test]
-        public void TestBlockingTake()
+        public void TestBlockingTakeProducerConsumer()
         {
             using var client1 = StartClient();
             using var client2 = StartClient();
