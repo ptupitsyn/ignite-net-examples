@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apache.Ignite.ThinQueue", "Apache.Ignite.ThinQueue\Apache.Ignite.ThinQueue.csproj", "{D6FB58AC-05CD-4C06-BFA5-EC564C7F00D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apache.Ignite.ThinQueue.Tests", "Apache.Ignite.ThinQueue.Tests\Apache.Ignite.ThinQueue.Tests.csproj", "{A2FA6CAC-39EE-45D5-B622-2D2929C43614}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,17 @@ Global
 		{D6FB58AC-05CD-4C06-BFA5-EC564C7F00D0}.Release|x64.Build.0 = Release|Any CPU
 		{D6FB58AC-05CD-4C06-BFA5-EC564C7F00D0}.Release|x86.ActiveCfg = Release|Any CPU
 		{D6FB58AC-05CD-4C06-BFA5-EC564C7F00D0}.Release|x86.Build.0 = Release|Any CPU
+		{A2FA6CAC-39EE-45D5-B622-2D2929C43614}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2FA6CAC-39EE-45D5-B622-2D2929C43614}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2FA6CAC-39EE-45D5-B622-2D2929C43614}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A2FA6CAC-39EE-45D5-B622-2D2929C43614}.Debug|x64.Build.0 = Debug|Any CPU
+		{A2FA6CAC-39EE-45D5-B622-2D2929C43614}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A2FA6CAC-39EE-45D5-B622-2D2929C43614}.Debug|x86.Build.0 = Debug|Any CPU
+		{A2FA6CAC-39EE-45D5-B622-2D2929C43614}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2FA6CAC-39EE-45D5-B622-2D2929C43614}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2FA6CAC-39EE-45D5-B622-2D2929C43614}.Release|x64.ActiveCfg = Release|Any CPU
+		{A2FA6CAC-39EE-45D5-B622-2D2929C43614}.Release|x64.Build.0 = Release|Any CPU
+		{A2FA6CAC-39EE-45D5-B622-2D2929C43614}.Release|x86.ActiveCfg = Release|Any CPU
+		{A2FA6CAC-39EE-45D5-B622-2D2929C43614}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
