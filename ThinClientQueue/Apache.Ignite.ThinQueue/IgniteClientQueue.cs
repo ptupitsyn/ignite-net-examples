@@ -119,7 +119,7 @@ namespace Apache.Ignite.ThinQueue
                         return result;
                     }
 
-                    Monitor.Wait(_querySyncRoot);
+                    Monitor.Wait(_querySyncRoot, TimeSpan.FromSeconds(3));
                 }
             }
         }

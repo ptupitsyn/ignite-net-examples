@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace Apache.Ignite.ThinQueue.Tests
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
+            Ignition.Start(GetIgniteConfiguration());
             Ignition.Start(GetIgniteConfiguration());
         }
 
@@ -84,8 +86,46 @@ namespace Apache.Ignite.ThinQueue.Tests
             Assert.AreEqual(2, queue2.Take());
         }
 
+        [Test]
+        public void TestMultithreaded()
+        {
+            using var client1 = StartClient();
+            using var client2 = StartClient();
+
+            var queue1 = client1.GetQueue<int>("my-queue");
+            var queue2 = client1.GetQueue<int>("my-queue");
+
+            var rnd = new Random();
+            var taken = new ConcurrentBag<int>();
+            var added = new ConcurrentBag<int>();
+
+            Parallel.For(1, 30000, x =>
+            {
+                var q = x % 2 == 0 ? queue1 : queue2;
+
+                if (rnd.Next() % 2 == 0 && q.Count < 10)
+                {
+                    q.Enqueue(x);
+                    added.Add(x);
+                }
+                else
+                {
+                    if (q.TryDequeue(out var r))
+                        taken.Add(r);
+                }
+            });
+
+            while (queue1.TryDequeue(out var r))
+                taken.Add(r);
+
+            CollectionAssert.AreEquivalent(added, taken);
+        }
+
         private static IIgniteClient StartClient() =>
-            Ignition.StartClient(new IgniteClientConfiguration("127.0.0.1:10800"));
+            Ignition.StartClient(new IgniteClientConfiguration("127.0.0.1:10800")
+            {
+                EnablePartitionAwareness = true
+            });
 
         private static IgniteConfiguration GetIgniteConfiguration() =>
             new()
@@ -107,7 +147,8 @@ namespace Apache.Ignite.ThinQueue.Tests
                     "-ea",
                     "-DIGNITE_QUIET=true",
                     "-Duser.timezone=UTC"
-                }
+                },
+                AutoGenerateIgniteInstanceName = true
             };
     }
 }
