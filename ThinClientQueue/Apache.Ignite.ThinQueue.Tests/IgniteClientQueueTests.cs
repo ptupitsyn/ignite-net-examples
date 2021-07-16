@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Apache.Ignite.Core;
 using Apache.Ignite.Core.Client;
 using Apache.Ignite.Core.Common;
@@ -11,6 +13,8 @@ namespace Apache.Ignite.ThinQueue.Tests
 {
     public class IgniteClientQueueTests
     {
+        private const string QueueName = "my-queue";
+
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
@@ -23,6 +27,14 @@ namespace Apache.Ignite.ThinQueue.Tests
             Ignition.StopAll(true);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            using var client = StartClient();
+
+            client.GetQueue<int>(QueueName).Close();
+        }
+
         [Test]
         public void TestEnqueueDequeue()
         {
@@ -32,18 +44,41 @@ namespace Apache.Ignite.ThinQueue.Tests
             var queue1 = client1.GetQueue<int>("my-queue");
             var queue2 = client1.GetQueue<int>("my-queue");
 
+            Assert.IsFalse(queue1.TryDequeue(out _));
+
             queue1.Enqueue(1);
             queue2.Enqueue(2);
 
             Assert.AreEqual(2, queue1.Dequeue());
-            Assert.AreEqual(1, queue2.Dequeue());
+            Assert.AreEqual(1, queue2.TryDequeue(out var r) ? r : -1);
 
             var ex = Assert.Throws<IgniteException>(() => queue1.Dequeue());
             Assert.IsNotNull(ex);
             Assert.AreEqual("Queue is empty", ex.Message);
+        }
 
-            queue1.Close();
-            queue2.Close();
+        [Test]
+        public void TestBlockingTake()
+        {
+            using var client1 = StartClient();
+            using var client2 = StartClient();
+
+            var queue1 = client1.GetQueue<int>("my-queue");
+            var queue2 = client1.GetQueue<int>("my-queue");
+
+            Task.Run(() =>
+            {
+                Thread.Sleep(200);
+                queue1.Enqueue(1);
+
+                Thread.Sleep(200);
+                queue1.Enqueue(2);
+            });
+
+            Assert.IsFalse(queue2.TryDequeue(out _));
+
+            Assert.AreEqual(1, queue2.Take());
+            Assert.AreEqual(2, queue2.Take());
         }
 
         private static IIgniteClient StartClient() =>
