@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Apache.Ignite.Core.Cache.Event;
 using Apache.Ignite.Core.Client;
@@ -46,7 +47,14 @@ namespace Apache.Ignite.ThinQueue
 
         public void Close()
         {
-            _client.DestroyCache(_cache.Name);
+            try
+            {
+                _client.DestroyCache(_cache.Name);
+            }
+            catch (IgniteException e) when (e.Message.StartsWith("Cache does not exist", StringComparison.Ordinal))
+            {
+                // Ignore: already closed.
+            }
         }
 
         public void Enqueue(T item)
