@@ -57,8 +57,7 @@ namespace Apache.Ignite.ThinQueue.Tests
             Assert.AreEqual(1, queue2.TryDequeue(out var r) ? r : -1);
 
             var ex = Assert.Throws<IgniteException>(() => queue1.Dequeue());
-            Assert.IsNotNull(ex);
-            Assert.AreEqual("Queue is empty", ex.Message);
+            Assert.AreEqual("Queue is empty", ex!.Message);
         }
 
         [Test]
