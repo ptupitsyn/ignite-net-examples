@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Threading;
 using Apache.Ignite.Core.Cache.Event;
 using Apache.Ignite.Core.Client;
 using Apache.Ignite.Core.Client.Cache;
@@ -12,7 +12,7 @@ namespace Apache.Ignite.ThinQueue
     /// <summary>
     /// Distributed thin client Ignite queue.
     /// </summary>
-    public sealed class IgniteClientQueue<T> : ICacheEntryEventListener<long, T>, IDisposable
+    public sealed class IgniteClientQueue<T> : ICacheEntryEventListener<int, T>
     {
         private const int CounterId = -1;
 
@@ -23,8 +23,6 @@ namespace Apache.Ignite.ThinQueue
         private readonly ICacheClient<int, int> _cacheCounter;
 
         private readonly object _querySyncRoot = new object();
-
-        private IContinuousQueryHandleClient _queryHandle;
 
         public IgniteClientQueue(IIgniteClient client, string name)
         {
@@ -38,9 +36,12 @@ namespace Apache.Ignite.ThinQueue
             _cacheCounter.PutIfAbsent(CounterId, 0);
         }
 
-        void ICacheEntryEventListener<long, T>.OnEvent(IEnumerable<ICacheEntryEvent<long, T>> evts)
+        void ICacheEntryEventListener<int, T>.OnEvent(IEnumerable<ICacheEntryEvent<int, T>> evts)
         {
-            throw new NotImplementedException();
+            lock (_querySyncRoot)
+            {
+                Monitor.Pulse(_querySyncRoot);
+            }
         }
 
         public void Close()
@@ -97,14 +98,30 @@ namespace Apache.Ignite.ThinQueue
         /// </summary>
         public T Take()
         {
-            // TODO: Lock and cont query.
-            throw new NotImplementedException();
-        }
+            if (TryDequeue(out var result))
+            {
+                return result;
+            }
 
-        public void Dispose()
-        {
-            // _queryHandle.Dispose();
-            // _client.DestroyCache(_cache.Name);
+            lock (_querySyncRoot)
+            {
+                if (TryDequeue(out result))
+                {
+                    return result;
+                }
+
+                using var query = _cache.QueryContinuous(new ContinuousQueryClient<int, T>(this));
+
+                while (true)
+                {
+                    if (TryDequeue(out result))
+                    {
+                        return result;
+                    }
+
+                    Monitor.Wait(_querySyncRoot);
+                }
+            }
         }
     }
 }
