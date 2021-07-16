@@ -95,11 +95,6 @@ namespace Apache.Ignite.ThinQueue
 
             lock (_querySyncRoot)
             {
-                if (TryDequeue(out result))
-                {
-                    return result;
-                }
-
                 using var query = _cache.QueryContinuous(new ContinuousQueryClient<int, T>(this));
 
                 while (true)
